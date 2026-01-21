@@ -1,6 +1,6 @@
 ---
 title: Domain model for my cool project!
-author: me (me@myumanitoba.ca)
+author: Andre Lisandro Cruz Ibarra (cruzibal@myumanitoba.ca)
 date: Winter 2026
 ---
 
@@ -11,13 +11,12 @@ date: Winter 2026
     classDiagram
 
         class Product{
-            <<record>>
-
+            
             -string name
             -number price
 
-            +getPrice() number
-            +getName() price
+            +price() number
+            +name() string
             
     
         }
@@ -34,14 +33,19 @@ date: Winter 2026
             
         }
 
+        note for Receipt"Invariant properties:
+        * no need to check cart if its null due to typescript preventing it"
+
         class Cart {
-            -List~Product~ items
+            -Array~Product~ items
 
             +addToCart(Product p) void
-            +removeFromCart(Product p) void
             +checkout() Receipt
         
         }
+
+        note for Cart "Invariant properties:
+        *loop items, Product.name.length >=1 and Product.price >= 1 in items."
 
         Cart --o Product
         Cart --* Receipt

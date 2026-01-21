@@ -1,6 +1,6 @@
 ---
 title: Domain model for my cool project!
-author: me (me@myumanitoba.ca)
+author: Andre Lisandro Cruz Ibarra (cruzibal@myumanitoba.ca)
 date: Winter 2026
 ---
 
@@ -28,19 +28,4 @@ flowchart
         complete[[Order complete]]        
     
     end
-:::
-
-## Cart Screen
-
-:::mermaid
-    flowchart
-
-        subgraph CART_SCREEN
-
-        start[[Cart Screen]]
-        start
-
-
-
-
 :::
