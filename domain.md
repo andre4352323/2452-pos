@@ -23,13 +23,13 @@ date: Winter 2026
 
         note for Product "Invariant properties:
         * name.length >= 1
-        * price >= 1"
+        * price > 0.0"
 
     
         class Receipt {
             -Cart cart
 
-            +print() void
+            +totalCost() number
             
         }
 
@@ -41,11 +41,12 @@ date: Winter 2026
 
             +addToCart(Product p) void
             +checkout() Receipt
+            +items() Array~Product~
         
         }
 
         note for Cart "Invariant properties:
-        *loop items, Product.name.length >=1 and Product.price >= 1 in items."
+        *loop items, Product.name.length >=1 and Product.price > 0.0 in items."
 
         Cart --o Product
         Cart --* Receipt
