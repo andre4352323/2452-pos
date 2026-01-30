@@ -19,7 +19,7 @@ flowchart
 
         start == Press checkout button ==> validCart{Has at least one product}
         start == Press product image to view it ==> productView
-        productView[Product Information] == Press add to cart button ==> updateCart[Update Cart]
+        productView[Product Information] == Press add to cart button ==> updateCart{Update Cart}
         updateCart -. updated cart .-> start
         productView == Go Back button ==> start
     
