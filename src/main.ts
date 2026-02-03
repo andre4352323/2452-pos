@@ -1,9 +1,12 @@
 import CartController from "./controller/cart-controller";
+import ImageController from "./controller/image-controller";
+import Product from "./model/product";
+import Cart from "./model/cart";
 
-let trainerController = new CartController();
+let product1 = new Product("Popcorns", 5.5);
+let product2 = new Product("Soda", 3.0);
+const cart = new Cart();
 
-//connect button on the page with the controller
-//this would be later moved to a view class
-
-document.querySelector("#add-toCart")!
-.addEventListener("click", () => trainerController.addToCart());
+const cartController = new CartController(cart);
+new ImageController(product1, cartController);
+new ImageController(product2, cartController);

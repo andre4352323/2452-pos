@@ -1,21 +1,28 @@
 import type Cart from "../model/cart";
+import type CartController from "../controller/cart-controller";
+import type Product from "../model/product";    
 
 export default class CartView {
 
     #cart: Cart;
     #cartEl: HTMLUListElement;
+    #cartController: CartController;
 
-    constructor(cart: Cart) {
+    constructor(cart: Cart, cartController: CartController) {
 
         //view needs to listen for changes in the cart (like addiging items)
-
         this.#cart = cart;
-        this.#cart.registerListener(this);
+        this.#cartController = cartController;
+        this.#cart.registerListener(this);  
 
         //adding the div to the html document and 
         // the div added has an unordered list to hold cart items
         document.querySelector("#app")!.innerHTML = 
-        "<div id= 'cart'> <ul> </ul> </div>";
+            `<div id="cart">
+              <h2>Shopping Cart</h2>
+              <ul></ul>
+             </div>`
+        
         this.#cartEl = document.querySelector("#cart > ul")!;
     }
 
