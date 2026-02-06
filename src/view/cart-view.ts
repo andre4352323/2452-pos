@@ -19,7 +19,7 @@ export default class CartView {
         // the div added has an unordered list to hold cart items
         document.querySelector("#app")!.innerHTML = 
             `<div id="cart">
-              <h2>Shopping Cart</h2>
+              <!--<h2>Shopping Cart</h2>-->
               <ul></ul>
              </div>`
         
