@@ -1,7 +1,6 @@
 import type Cart from "../model/cart";
 import type CartController from "../controller/cart-controller";
-import type Product from "../model/product";    
-
+  
 export default class CartView {
 
     #cart: Cart;
@@ -19,11 +18,14 @@ export default class CartView {
         // the div added has an unordered list to hold cart items
         document.querySelector("#app")!.innerHTML = 
             `<div id="cart">
-              <!--<h2>Shopping Cart</h2>-->
+              <h2>Shopping Cart</h2>
               <ul></ul>
+              <button id="checkout-btn">Checkout</button>
              </div>`
         
         this.#cartEl = document.querySelector("#cart > ul")!;
+        document.querySelector("#checkout-btn")!
+        .addEventListener("click", () => this.#cartController.checkout());
     }
 
     //this method is needed to satisfy the Listener interface
@@ -41,7 +43,5 @@ export default class CartView {
 
             this.#cartEl.appendChild(productEl);
         });    
-
-
-    }    
+    }
 }

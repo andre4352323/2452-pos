@@ -30,7 +30,7 @@ export default class ProductView {
 
         this.#productviewElement.querySelector("#add-to-cart")!
         .addEventListener("click", () => { 
-            console.log("Add to cart clicked for:", this.#product);
+            //console.log("Add to cart clicked for:", this.#product);
             this.#cartController.addToCart(this.#product)});
             
         this.#productviewElement.querySelector("#close-btn")!

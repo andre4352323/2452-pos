@@ -11,3 +11,13 @@ test('Adding to cart', () => {
 
     expect(cart.items.includes(product));
 }); 
+
+test('Listening to cart changes', () => {
+
+    let product = new Product('Sample Product', 10.0);
+    let cart = new Cart();
+    let listenerCalled = false;
+    cart.addToCart(product);
+
+    expect(listenerCalled).toBe(true);
+});

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2452-pos REPL</title>
+  </head>
+  <body>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@electric-sql/pglite-repl/dist-webcomponent/Repl.js"
+      type="module"
+    ></script>
+
+    <!-- Include the Repl web component in your page -->
+    <pglite-repl id="repl"></pglite-repl>
+
+    <script type="module">
+      import { PGlite } from 'https://cdn.jsdelivr.net/npm/@electric-sql/pglite/dist/index.js'
+
+      // Create a PGlite instance
+      const pg = new PGlite()
+
+      // Retrieve the Repl element
+      const repl = document.getElementById('repl')
+
+      // REPL to your PGlite instance
+      repl.pg = pg
+    </script> 
+  </body>
+</html>

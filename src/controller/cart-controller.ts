@@ -1,6 +1,7 @@
 import Product from "../model/product";
 import Cart from "../model/cart.ts";
 import CartView from "../view/cart-view.ts";
+import ReceiptView from "../view/receipt-view.ts";
 
 // later we might want to move this to cart class to 
 // have responsability of what curretn cart is and all carts
@@ -10,6 +11,7 @@ export default class CartController {
     #cart: Cart;
     //CHANGE CART VIEW TO BE NULL SO THAT ONLY ONE CART VIEW IS CREATED
     #cartView?: CartView;
+    #receiptView?: ReceiptView;
  
     constructor(cart: Cart) {
         
@@ -26,5 +28,15 @@ export default class CartController {
         }
 
         this.#cart.addToCart(product);
+    }
+
+    checkout(): void {
+
+       if(!this.#receiptView){
+
+            this.#receiptView = new ReceiptView(this.#cart, this);
+       }
+
+       this.#cart.checkout();
     }
 }
