@@ -21,8 +21,9 @@ export default class ImageView {
         // the div added has an image to hold product image
         document.querySelector("#app")!.innerHTML += 
             `<div id="product">
-              <img src="images/${this.#product.name}.png"
-              alt="${this.#product.name}" />
+              <img src="/src/img/${this.#product.name}.jpg"
+              alt="${this.#product.name}"
+              style="width: 200px; height: 200px; object-fit: cover; cursor: pointer;"/>
              </div>`
 
         this.#productEl = document.querySelector(`img[alt='${this.#product.name}']`)!;

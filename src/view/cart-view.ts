@@ -5,7 +5,9 @@ export default class CartView {
 
     #cart: Cart;
     #cartEl: HTMLUListElement;
+    #cartContainerEl: HTMLDivElement;
     #cartController: CartController;
+
 
     constructor(cart: Cart, cartController: CartController) {
 
@@ -22,10 +24,20 @@ export default class CartView {
               <ul></ul>
               <button id="checkout-btn">Checkout</button>
              </div>`
-        
+        this.#cartContainerEl = document.querySelector("#cart")!;
         this.#cartEl = document.querySelector("#cart > ul")!;
         document.querySelector("#checkout-btn")!
         .addEventListener("click", () => this.#cartController.checkout());
+    }
+
+    hide() {
+
+        this.#cartContainerEl.style.display = "none";
+    }
+     
+    show () {
+
+        this.#cartContainerEl.style.display = "block";
     }
 
     //this method is needed to satisfy the Listener interface

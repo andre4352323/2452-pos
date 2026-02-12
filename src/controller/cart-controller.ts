@@ -27,16 +27,19 @@ export default class CartController {
             this.#cartView = new CartView(this.#cart, this);
         }
 
+        this.#cartView.show();
         this.#cart.addToCart(product);
     }
 
     checkout(): void {
 
-       if(!this.#receiptView){
+       let receipt =this.#cart.checkout();
+       new ReceiptView(this.#cart, this, receipt);
+       this.#cart.clearCart();
 
-            this.#receiptView = new ReceiptView(this.#cart, this);
+       if(this.#cartView) {
+
+        this.#cartView.hide();
        }
-
-       this.#cart.checkout();
     }
 }

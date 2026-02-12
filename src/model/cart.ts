@@ -28,6 +28,12 @@ export default class Cart{
 
         return this.#items;
     }
+    
+    clearCart(): void {
+
+        this.#items = [];
+        this.#notifyAll();
+    }
 
     registerListener(listener: Listener): void {
 
