@@ -14,11 +14,9 @@ date: Winter 2026
             
             -string name
             -number price
-
-            +price() number
-            +name() string
-            
     
+            +price() number
+            +name() string    
         }
 
         note for Product "Invariant properties:
@@ -38,11 +36,13 @@ date: Winter 2026
 
         class Cart {
             -Array~Product~ items
+            -Array~Listeners~ listeners
 
             +addToCart(Product p) void
             +checkout() Receipt
             +items() Array~Product~
-        
+            +clearCart() void
+            +registerListeners(Listener l) void
         }
 
         note for Cart "Invariant properties:
@@ -51,6 +51,10 @@ date: Winter 2026
         Cart --o Product
         Cart --* Receipt
 
+        class Listeners{
+            <<Interface>>
+
+            +notify() void
+        }
+
 :::
-
-

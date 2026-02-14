@@ -1,16 +1,13 @@
 import { assert } from "../assertions.ts";
-import type Listener from "./listeners.ts";
 
 export default class Product {
 
     #price: number;
     #name: string;
-    #listeners: Array<Listener>;
 
     constructor(name: string, price: number) {
         this.#name = name;
         this.#price = price;
-        this.#listeners = new Array<Listener>();
         this.#checkProduct();
     }
 
@@ -29,17 +26,4 @@ export default class Product {
         
         return this.#name;
     }
-
-    registerListener(listener: Listener): void {
-
-        this.#listeners.push(listener);
-    }
-    
-    notifyAll(): void {
-
-        this.#listeners.forEach((listener) => {
-            listener.notify();
-        });
-        
-    }    
 }

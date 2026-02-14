@@ -17,16 +17,16 @@ flowchart
 
         start[[Products Screen]]
 
-        start == Press checkout button ==> validCart{Has at least one product}
-        start == Press product image to view it ==> productView
-        productView[Product Information] == Press add to cart button ==> updateCart{Update Cart}
-        updateCart -. updated cart .-> start
-        productView == Go Back button ==> start
-    
-        validCart -. Print receipt .-> complete
-        validCart -. No .-> start
-       
-        complete[[Order complete]]        
+        start == Press product image ==> productView[View Product Information]
+        
+        productView == Press add to cart button ==> updateCart{Update Cart}
+        updateCart -. cart view updated .-> start
+        
+        productView == Close/Go Back button ==> start
+        
+        start == Press checkout button<br/>(only visible if cart has items) ==> receipt[Receipt printed with total cost]
+        
+        receipt == Press 'Paid and Done' button ==> complete[[Order Complete]]
     
     end
 :::
