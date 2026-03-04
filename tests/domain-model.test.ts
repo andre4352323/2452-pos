@@ -28,35 +28,6 @@ describe('Product', () => {
 
         expect(() => new Product('Test', -5.0)).toThrow('Product price should be greater than 0.0');
     });
-
-    test('Product can register a listener', () => {
-
-        const product = new Product('Test', 10.0);
-        const listener: Listener = {
-            notify: () => {}
-        };
-        
-        expect(() => product.registerListener(listener)).not.toThrow();
-    });
-
-    test('Product notifies all registered listeners', () => {
-
-        const product = new Product('Test', 10.0);
-        let callCount = 0;
-        
-        const listener1: Listener = {
-            notify: () => { callCount++; }
-        };
-        const listener2: Listener = {
-            notify: () => { callCount++; }
-        };
-        
-        product.registerListener(listener1);
-        product.registerListener(listener2);
-        product.notifyAll();
-        
-        expect(callCount).toBe(2);
-    });
 });
 
 describe('Cart', () => {

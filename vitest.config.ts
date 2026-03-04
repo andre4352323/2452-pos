@@ -1,8 +1,10 @@
-import  { defineConfig } from "vite";
+import  { defineConfig } from "vitest/config";
 
 export default defineConfig({
+    test: {
+        coverage:{
 
-    optimizeDeps: {
-        exclude: ['@electric-sql/pglite'],
-    },
+            provider: 'v8'
+        },      
+    },    
 })

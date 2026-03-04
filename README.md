@@ -10,7 +10,9 @@ POS System is an implementation of the software used to do things like keep trac
 # Running
 
 This project is a Node.js project using VSCode. You can run it on the command
-line using `npx vite`:
+line using 
+`npm install` and then
+`npx vite`:
 
 And then open your web browser and go to the address printed out.
 
@@ -18,3 +20,11 @@ And then open your web browser and go to the address printed out.
 
 * You can find my domain model in `domain.md`.
 * You can find my flow diagrams in `flows.md`.
+
+# Changes in my domain model and flow diagrams
+
+* Made a new class cashier with username and password with an array of receipts
+* Added Date variable to Receipt
+* Added enumeration class for product names and use it in my product class as name instead of string
+* Made a new flow to choose from two coupons when trying to checkout instead of just paying right away
+* the new point of start is the log in screen flow and added a sign up flow to create a cashier account and then log in

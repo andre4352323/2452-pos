@@ -18,14 +18,18 @@
     <script type="module">
       import { PGlite } from 'https://cdn.jsdelivr.net/npm/@electric-sql/pglite/dist/index.js'
 
+      import ddl from "./create-tables.sql";
+
       // Create a PGlite instance
-      const pg = new PGlite()
+      const pg = new PGlite('idb://2452-pos')
+
+      pg.exec(ddl);
 
       // Retrieve the Repl element
       const repl = document.getElementById('repl')
 
       // REPL to your PGlite instance
       repl.pg = pg
-    </script> 
+    </script>
   </body>
 </html>

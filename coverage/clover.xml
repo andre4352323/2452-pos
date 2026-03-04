@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1771036524583" clover="3.2.0">
-  <project timestamp="1771036524584" name="All files">
-    <metrics statements="27" coveredstatements="27" conditionals="2" coveredconditionals="2" methods="20" coveredmethods="20" elements="49" coveredelements="49" complexity="0" loc="27" ncloc="27" packages="2" files="4" classes="4"/>
+<coverage generated="1772645390290" clover="3.2.0">
+  <project timestamp="1772645390290" name="All files">
+    <metrics statements="23" coveredstatements="23" conditionals="2" coveredconditionals="2" methods="17" coveredmethods="17" elements="42" coveredelements="42" complexity="0" loc="23" ncloc="23" packages="2" files="4" classes="4"/>
     <package name="src">
       <metrics statements="3" coveredstatements="3" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
       <file name="assertions.ts" path="C:\Users\andre\COMP2452\2452-pos\src\assertions.ts">
         <metrics statements="3" coveredstatements="3" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
-        <line num="3" count="41" type="cond" truecount="2" falsecount="0"/>
+        <line num="3" count="37" type="cond" truecount="2" falsecount="0"/>
         <line num="5" count="3" type="stmt"/>
         <line num="13" count="3" type="stmt"/>
       </file>
     </package>
     <package name="src.model">
-      <metrics statements="24" coveredstatements="24" conditionals="0" coveredconditionals="0" methods="18" coveredmethods="18"/>
+      <metrics statements="20" coveredstatements="20" conditionals="0" coveredconditionals="0" methods="15" coveredmethods="15"/>
       <file name="cart.ts" path="C:\Users\andre\COMP2452\2452-pos\src\model\cart.ts">
         <metrics statements="11" coveredstatements="11" conditionals="0" coveredconditionals="0" methods="8" coveredmethods="8"/>
         <line num="12" count="13" type="stmt"/>
@@ -28,18 +28,14 @@
         <line num="47" count="5" type="stmt"/>
       </file>
       <file name="product.ts" path="C:\Users\andre\COMP2452\2452-pos\src\model\product.ts">
-        <metrics statements="11" coveredstatements="11" conditionals="0" coveredconditionals="0" methods="7" coveredmethods="7"/>
-        <line num="11" count="21" type="stmt"/>
-        <line num="12" count="21" type="stmt"/>
-        <line num="13" count="21" type="stmt"/>
-        <line num="14" count="21" type="stmt"/>
-        <line num="19" count="21" type="stmt"/>
-        <line num="20" count="21" type="stmt"/>
-        <line num="25" count="8" type="stmt"/>
-        <line num="30" count="1" type="stmt"/>
-        <line num="35" count="3" type="stmt"/>
-        <line num="40" count="1" type="stmt"/>
-        <line num="41" count="2" type="stmt"/>
+        <metrics statements="7" coveredstatements="7" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="4"/>
+        <line num="9" count="19" type="stmt"/>
+        <line num="10" count="19" type="stmt"/>
+        <line num="11" count="19" type="stmt"/>
+        <line num="16" count="19" type="stmt"/>
+        <line num="17" count="19" type="stmt"/>
+        <line num="22" count="8" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
       </file>
       <file name="receipt.ts" path="C:\Users\andre\COMP2452\2452-pos\src\model\receipt.ts">
         <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="3"/>
