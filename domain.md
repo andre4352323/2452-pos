@@ -21,6 +21,11 @@ date: Winter 2026
             +password() string
         }
 
+        note for Cashier "Invariant properties:
+        * username.length >=  10
+        * password.lenght >= 10
+        * no need to check for null in receipt due to typescript preventing it"
+
         Cashier "*" --o Receipt
         
         class Product{
@@ -28,6 +33,7 @@ date: Winter 2026
             -~serial id
             -ProductType name
             -number price
+            -number quantityValue
             -ProductQuantity quantity
             -Cart cart
         
@@ -42,6 +48,7 @@ date: Winter 2026
         
         note for Product "Invariant properties:
         * price > 0.0
+        * quantity value >= 1
         * no need to check for null quantity and name due to typescript preventing it
         * id is for ddl purposes to differentiate other instances of the same name in a cart"
 
@@ -66,7 +73,7 @@ date: Winter 2026
 
         class Receipt {
             -~serial id
-            -Cart cart
+            -~Cart cart
             -Temporal time
             -Cashier cashier
 
@@ -85,8 +92,8 @@ date: Winter 2026
             
             -?Array~Product~ items
             -Array~Listeners~ listener
-            -?Coupon coupon
-            -?Receipt receipt
+            -Coupon coupon
+            -~Receipt receipt
             
             +applyCoupon(Coupon c) void
             +addToCart(Product p) void
@@ -129,8 +136,8 @@ date: Winter 2026
         }
 
         note for BOGO "Invariant properties:
-        * name.length >= 20
-        * description.length >= 50
+        * name.length >= 5
+        * description.length >= 10
         * product must not be null before apply() is called
         * product must appear 2 or more times in the cart"
 
@@ -138,7 +145,7 @@ date: Winter 2026
 
         class TotalDiscount{
 
-            -string name
+            -string name  
             -string description
 
             +apply(Cart c) number
@@ -146,9 +153,32 @@ date: Winter 2026
         }
 
         note for TotalDiscount "Invariant properties:
-        * name.length >= 20
-        * description.length >= 50"
+        * name.length >= 5
+        * description.length >= 10"
 
         Coupon <|.. TotalDiscount
+
+        
   
 :::
+
+# Domain Model Changes
+
+## New Classes
+- **Cashier** — new actor with username/password and lazy receipt collection
+- **ProductType** *(enum)* — replaces `string name` on Product; values: `POPCORN`, `SODA`, `SUGAR`
+- **ProductQuantity** *(enum)* — new unit type on Product; values: `UNITS`, `GR`
+- **Coupon** *(interface)* — discount strategy with `apply(Cart): number`
+- **BOGO** *(implements Coupon)* — buy-one-get-one discount
+- **TotalDiscount** *(implements Coupon)* — flat cart discount
+
+## Modified Classes
+
+**Product** — added `~serial id`, `quantityValue`, `ProductQuantity quantity`, `Cart cart`; `name` retyped from `string` to `ProductType`
+
+**Receipt** — added `~serial id`, `Temporal time`, `Cashier cashier`, and `getTime()` method
+
+**Cart** — added `Coupon coupon`, `~Receipt receipt`, `applyCoupon()` method; `items` made optional
+
+## Removed Invariants
+- `Product.name.length >= 1` — no longer needed, name is now enforced by `ProductType` enum
