@@ -1,204 +1,197 @@
-import { expect, test, describe } from 'vitest';
-import Cart from '../src/model/cart';
+import { expect, test, describe, vi, beforeEach } from 'vitest';
 import Product from '../src/model/product';
 import Receipt from '../src/model/receipt';
+import Cart from '../src/model/cart';
+import Cashier from '../src/model/cashier';
+import BogoCoupon from '../src/model/bogo-coupon';
+import TotalDiscountCoupon from '../src/model/total-discount-coupon';
 import type Listener from '../src/model/listeners';
 
+
+//required so that the test runs more than once using mock
+ 
+const mockQuery = vi.fn();
+ 
+vi.mock('../src/model/connection', () => ({
+    default: () => ({ query: mockQuery }),
+}));
+ 
+function rows<T>(data: T[]) {
+    return { rows: data };
+}
+ 
+beforeEach(() => mockQuery.mockReset());
+ 
+const noCoupon = { name: 'None', description: '', apply: (s: number) => s };
+ 
 describe('Product', () => {
+ 
+    test('valid product is created correctly', () => {
 
-    test('Create product with valid name and price', () => {
-
-        const product = new Product('Sample Product', 10.0);
-        
-        expect(product.name).toBe('Sample Product');
-        expect(product.price).toBe(10.0);
+        const p = new Product('POPCORN', 5.0, 'UNITS', 2);
+        expect(p.name).toBe('POPCORN');
+        expect(p.price).toBe(5.0);
+        expect(p.quantityValue).toBe(2);
     });
+ 
+    test('empty name throws', () => {
 
-    test('Product with empty name throws error', () => {
-
-        expect(() => new Product('', 10.0)).toThrow('Product name should be at least 1 character long');
+        expect(() => new Product('' as any, 5.0, 'UNITS')).toThrow('Product name should be at least 1 character long');
     });
+ 
+    test('zero or negative price throws', () => {
 
-    test('Product with zero price throws error', () => {
-
-        expect(() => new Product('Test', 0.0)).toThrow('Product price should be greater than 0.0');
+        expect(() => new Product('SODA', 0, 'UNITS')).toThrow('Product price should be greater than 0.0');
+        expect(() => new Product('SODA', -1, 'UNITS')).toThrow('Product price should be greater than 0.0');
     });
+ 
+    test('saveProduct sets id from db', async () => {
 
-    test('Product with negative price throws error', () => {
-
-        expect(() => new Product('Test', -5.0)).toThrow('Product price should be greater than 0.0');
+        mockQuery.mockResolvedValueOnce(rows([{ id: 42 }]));
+        const p = new Product('POPCORN', 5.0, 'UNITS', 1);
+        await Product.saveProduct(p, 1);
+        expect(p.id).toBe(42);
     });
-});
+ 
+    test('getAllProducts returns mapped products', async () => {
 
-describe('Cart', () => {
-
-    test('New cart is empty', () => {
-        const cart = new Cart();
-        
-        expect(cart.items).toEqual([]);
-        expect(cart.items.length).toBe(0);
-    });
-
-    test('Adding product to cart', () => {
-
-        const product = new Product('Sample Product', 10.0);
-        const cart = new Cart();
-        
-        cart.addToCart(product);
-
-        expect(cart.items).toContain(product);
-        expect(cart.items.length).toBe(1);
-    });
-
-    test('Adding multiple products to cart', () => {
-
-        const product1 = new Product('Product 1', 10.0);
-        const product2 = new Product('Product 2', 20.0);
-        const cart = new Cart();
-        
-        cart.addToCart(product1);
-        cart.addToCart(product2);
-
-        expect(cart.items.length).toBe(2);
-        expect(cart.items).toContain(product1);
-        expect(cart.items).toContain(product2);
-    });
-
-    test('Clearing cart removes all items', () => {
-
-        const product1 = new Product('Product 1', 10.0);
-        const product2 = new Product('Product 2', 20.0);
-        const cart = new Cart();
-        
-        cart.addToCart(product1);
-        cart.addToCart(product2);
-        cart.clearCart();
-
-        expect(cart.items.length).toBe(0);
-        expect(cart.items).toEqual([]);
-    });
-
-    test('Cart notifies listeners when item is added', () => {
-
-        const product = new Product('Sample Product', 10.0);
-        const cart = new Cart();
-        let listenerCalled = false;
-        
-        const listener: Listener = {
-            notify: () => { listenerCalled = true; }
-        };
-        
-        cart.registerListener(listener);
-        cart.addToCart(product);
-
-        expect(listenerCalled).toBe(true);
-    });
-
-    test('Cart notifies listeners when cart is cleared', () => {
-
-        const product = new Product('Sample Product', 10.0);
-        const cart = new Cart();
-        let notifyCount = 0;
-        
-        const listener: Listener = {
-            notify: () => { notifyCount++; }
-        };
-        
-        cart.registerListener(listener);
-        cart.addToCart(product); 
-        cart.clearCart(); 
-
-        expect(notifyCount).toBe(2);
-    });
-
-    test('Cart can register multiple listeners', () => {
-
-        const product = new Product('Test', 10.0);
-        const cart = new Cart();
-        let listener1Called = false;
-        let listener2Called = false;
-        
-        const listener1: Listener = {
-            notify: () => { listener1Called = true; }
-        };
-        const listener2: Listener = {
-            notify: () => { listener2Called = true; }
-        };
-        
-        cart.registerListener(listener1);
-        cart.registerListener(listener2);
-        cart.addToCart(product);
-
-        expect(listener1Called).toBe(true);
-        expect(listener2Called).toBe(true);
-    });
-
-    test('Checkout returns a receipt', () => {
-
-        const cart = new Cart();
-        const receipt = cart.checkout();
-
-        expect(receipt).toBeInstanceOf(Receipt);
-    });
-
-    test('Checkout creates receipt with cart reference', () => {
-
-        const product = new Product('Test', 10.0);
-        const cart = new Cart();
-        
-        cart.addToCart(product);
-        const receipt = cart.checkout();
-
-        expect(receipt.totalCost()).toBe(10.0);
+        mockQuery.mockResolvedValueOnce(rows([
+            { product_type: 'SODA', product_unit: 'UNITS', product_price: 2.5 },
+        ]));
+        const products = await Product.getAllProducts();
+        expect(products).toHaveLength(1);
+        expect(products[0].name).toBe('SODA');
     });
 });
+ 
+describe('Cashier', () => {
+ 
+    test('valid cashier is created', () => {
 
+        const c = new Cashier('va', 'validpass1');
+        expect(c.username).toBe('va');
+    });
+ 
+    test('short username throws', () => {
+
+        expect(() => new Cashier('', 'validpass1')).toThrow('Cashier username should be at least 1 character long');
+    });
+ 
+    test('short password throws', () => {
+
+        expect(() => new Cashier('validuser1', '')).toThrow('Cashier password should be at least 1 character long');
+    });
+ 
+    test('findCashier returns null when not found', async () => {
+
+        mockQuery.mockResolvedValueOnce(rows([]));
+        const result = await Cashier.findCashier('cashier_one', 'wrongpass');
+        expect(result).toBeNull();
+    });
+ 
+    test('findCashier returns cashier when credentials match', async () => {
+
+        mockQuery
+            .mockResolvedValueOnce(rows([{ username: 'cashier_one', password: 'password_one' }]))
+            .mockResolvedValueOnce(rows([]));
+        const cashier = await Cashier.findCashier('cashier_one', 'password_one');
+        expect(cashier?.username).toBe('cashier_one');
+    });
+ 
+    test('usernameExists returns true/false correctly', async () => {
+
+        mockQuery.mockResolvedValueOnce(rows([{ username: 'cashier_one' }]));
+        expect(await Cashier.usernameExists('cashier_one')).toBe(true);
+ 
+        mockQuery.mockResolvedValueOnce(rows([]));
+        expect(await Cashier.usernameExists('nobody')).toBe(false);
+    });
+});
+ 
+describe('Coupons', () => {
+ 
+    test('TotalDiscountCoupon applies 10% off', async () => {
+
+        mockQuery.mockResolvedValueOnce(rows([{ name: '10% Off', description: 'Ten percent off' }]));
+        const coupon = await TotalDiscountCoupon.fromInventory();
+        expect(coupon.apply(100)).toBeCloseTo(90);
+    });
+ 
+    test('BogoCoupon subtracts selected product price', async () => {
+
+        mockQuery.mockResolvedValueOnce(rows([{ name: 'BOGO', description: 'Buy one get one' }]));
+        const product = new Product('SODA', 3.0, 'UNITS', 1);
+        const coupon = await BogoCoupon.fromInventory(product);
+        expect(coupon.apply(10)).toBeCloseTo(7);
+    });
+});
+ 
 describe('Receipt', () => {
+ 
+    test('totalCost sums price x quantity with no coupon', () => {
 
-    test('Receipt calculates total cost of empty cart', () => {
+        const p1 = new Product('POPCORN', 4.0, 'UNITS', 2); 
+        const p2 = new Product('SODA', 2.5, 'UNITS', 1);  
+        const receipt = new Receipt([p1, p2], 'cashier_one', 1, noCoupon);
+        expect(receipt.totalCost()).toBeCloseTo(10.5);
+    });
+ 
+    test('totalCost applies coupon discount', async () => {
 
-        const cart = new Cart();
-        const receipt = new Receipt(cart);
+        mockQuery.mockResolvedValueOnce(rows([{ name: '10% Off', description: 'Ten percent off' }]));
+        const coupon = await TotalDiscountCoupon.fromInventory();
+        const receipt = new Receipt([new Product('POPCORN', 10.0, 'UNITS', 1)], 'cashier_one', 1, coupon);
+        expect(receipt.totalCost()).toBeCloseTo(9.0);
+    });
+ 
+    test('empty cart receipt totals zero', () => {
 
+        const receipt = new Receipt([], 'cashier_one', 1, noCoupon);
         expect(receipt.totalCost()).toBe(0);
     });
+});
+ 
+describe('Cart', () => {
+ 
+    test('addToCart adds item and notifies listener', async () => {
 
-    test('Receipt calculates total cost of single item', () => {
-
-        const product = new Product('Product', 15.0);
-        const cart = new Cart();
-        
-        cart.addToCart(product);
-        const receipt = new Receipt(cart);
-
-        expect(receipt.totalCost()).toBe(15.0);
+        mockQuery.mockResolvedValueOnce(rows([{ id: 1 }]));
+        const cart = await Cart.createForCashier('cashier_one');
+ 
+        let notified = false;
+        const listener: Listener = { notify: () => { notified = true; } };
+        cart.registerListener(listener);
+ 
+        mockQuery.mockResolvedValueOnce(rows([{ id: 5 }])); 
+        await cart.addToCart(new Product('SODA', 2.5, 'UNITS', 1), 1);
+ 
+        expect(cart.items).toHaveLength(1);
+        expect(notified).toBe(true);
     });
+ 
+    test('checkout returns receipt with correct total', async () => {
 
-    test('Receipt calculates total cost of multiple items', () => {
-
-        const product1 = new Product('Product 1', 10.0);
-        const product2 = new Product('Product 2', 20.0);
-        const product3 = new Product('Product 3', 5.50);
-        const cart = new Cart();
-        
-        cart.addToCart(product1);
-        cart.addToCart(product2);
-        cart.addToCart(product3);
-        const receipt = new Receipt(cart);
-
-        expect(receipt.totalCost()).toBe(35.50);
+        mockQuery.mockResolvedValueOnce(rows([{ id: 1 }]));
+        const cart = await Cart.createForCashier('cashier_one');
+ 
+        mockQuery.mockResolvedValueOnce(rows([{ id: 10 }]));
+        await cart.addToCart(new Product('POPCORN', 5.0, 'UNITS', 1), 2); 
+ 
+        mockQuery
+            .mockResolvedValueOnce(rows([]))  
+            .mockResolvedValueOnce(rows([]))  
+ 
+        const receipt = await cart.checkout(noCoupon);
+        expect(receipt).toBeInstanceOf(Receipt);
+        expect(receipt.totalCost()).toBeCloseTo(10.0);
     });
+ 
+    test('loadOrCreateForCashier creates new cart when none exists', async () => {
 
-    test('Receipt created from checkout calculates correct total', () => {
-        
-        const product1 = new Product('Item A', 12.99);
-        const product2 = new Product('Item B', 7.01);
-        const cart = new Cart();
-        
-        cart.addToCart(product1);
-        cart.addToCart(product2);
-        const receipt = cart.checkout();
-
-        expect(receipt.totalCost()).toBe(20.00);
+        mockQuery
+            .mockResolvedValueOnce(rows([]))          
+            .mockResolvedValueOnce(rows([{ id: 5 }])); 
+        const cart = await Cart.loadOrCreateForCashier('cashier_one');
+        expect(cart.id).toBe(5);
     });
 });

@@ -2,44 +2,62 @@ import Product from "../model/product";
 import Cart from "../model/cart.ts";
 import CartView from "../view/cart-view.ts";
 import ReceiptView from "../view/receipt-view.ts";
-
-// later we might want to move this to cart class to 
-// have responsability of what curretn cart is and all carts
+import type Cashier from "../model/cashier.ts";
+import type Coupon from "../model/coupon.ts";
 
 export default class CartController {
 
     #cart: Cart;
-    //CHANGE CART VIEW TO BE NULL SO THAT ONLY ONE CART VIEW IS CREATED
+    #cashier: Cashier;
     #cartView?: CartView;
     #receiptView?: ReceiptView;
- 
-    constructor(cart: Cart) {
-        
+
+    constructor(cart: Cart, cashier: Cashier) {
         this.#cart = cart;
-    }
+        this.#cashier = cashier;
 
-    addToCart(product: Product): void {
+        // Always create the CartView once here so there is only ever one instance.
+        // If the cart has items, render and show them immediately.
+        // If empty, create it hidden so it's ready when addToCart is called.
+        this.#cartView = new CartView(this.#cart, this);
 
-        //WILL LIKELI HAVE IF STATEMENT TO CHECK IF THE CART VIEW WAS ALREADY CREATED OR NOT
-        // IF ALREADY CREATED JUST UPDATE IT (THIS FIXED MY ERROR OF LIST NOT BEING SHOWED)
-        if(!this.#cartView) {
-
-            this.#cartView = new CartView(this.#cart, this);
+        if (this.#cart.items.length > 0) {
+            this.#cartView.notify();
+            this.#cartView.show();
+        } else {
+            this.#cartView.hide();
         }
-
-        this.#cartView.show();
-        this.#cart.addToCart(product);
     }
 
-    checkout(): void {
+   checkout(): void {
 
-       let receipt =this.#cart.checkout();
-       new ReceiptView(this.#cart, this, receipt);
-       this.#cart.clearCart();
+        // Pass the cart items and cart itself to ReceiptView for coupon selection.
+        // The actual DB checkout happens only after the cashier confirms.
+        new ReceiptView(this.#cart, this);
 
-       if(this.#cartView) {
+    }
 
-        this.#cartView.hide();
-       }
+    addToCart(product: Product, quantityValue: number): void {
+
+        this.#cartView!.show();
+        // addToCart is now async — handle the promise.
+        this.#cart.addToCart(product, quantityValue).catch((e) => {
+            console.log("Add to cart error: " + e);
+        });
+    }
+
+    confirmCheckout(coupon: Coupon): void {
+        
+        this.#cart.checkout(coupon).then(() => {
+            // Explicitly clear the cart view list before switching to new cart.
+            this.#cartView!.clearItems();
+            this.#cartView!.hide();
+
+            Cart.createForCashier(this.#cashier.username).then((newCart) => {
+                this.#cart = newCart;
+                newCart.registerListener(this.#cartView!);
+                this.#cartView!.updateCart(newCart);
+            });
+        }).catch((e) => console.log("Checkout error: " + e));
     }
 }

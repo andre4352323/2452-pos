@@ -1,6 +1,6 @@
 import type Cart from "../model/cart";
 import type CartController from "../controller/cart-controller";
-  
+
 export default class CartView {
 
     #cart: Cart;
@@ -8,52 +8,54 @@ export default class CartView {
     #cartContainerEl: HTMLDivElement;
     #cartController: CartController;
 
-
     constructor(cart: Cart, cartController: CartController) {
-
-        //view needs to listen for changes in the cart (like addiging items)
         this.#cart = cart;
         this.#cartController = cartController;
-        this.#cart.registerListener(this);  
+        this.#cart.registerListener(this);
 
-        //adding the div to the html document and 
-        // the div added has an unordered list to hold cart items
-        document.querySelector("#app")!.innerHTML = 
-            `<div id="cart">
-              <h2>Shopping Cart</h2>
-              <ul></ul>
-              <button id="checkout-btn">Checkout</button>
-             </div>`
-        this.#cartContainerEl = document.querySelector("#cart")!;
-        this.#cartEl = document.querySelector("#cart > ul")!;
-        document.querySelector("#checkout-btn")!
-        .addEventListener("click", () => this.#cartController.checkout());
+        // Append to body instead of writing to #app so that ImageView's
+        // innerHTML += on #app never touches this element or kills its listeners.
+        this.#cartContainerEl = document.createElement("div");
+        this.#cartContainerEl.id = "cart";
+        this.#cartContainerEl.innerHTML = `
+            <h2>Shopping Cart</h2>
+            <ul></ul>
+            <button id="checkout-btn">Checkout</button>
+        `;
+
+        this.#cartEl = this.#cartContainerEl.querySelector("ul")!;
+        this.#cartContainerEl.querySelector("#checkout-btn")!
+            .addEventListener("click", () => this.#cartController.checkout());
+
+        document.body.appendChild(this.#cartContainerEl);
     }
 
-    hide() {
-
+    hide(): void {
+        
         this.#cartContainerEl.style.display = "none";
     }
-     
-    show () {
+
+    show(): void {
 
         this.#cartContainerEl.style.display = "block";
     }
 
-    //this method is needed to satisfy the Listener interface
-    notify(): void {
+    updateCart(cart: Cart): void {
 
-        //update internal state of products showing up
-
-        //empty the contents of the list
-        this.#cartEl.replaceChildren();
-        //repopulate the list with current items in the cart
-        this.#cart.items.forEach( (item) => {
-
-            let productEl = document.createElement("li");
-            productEl.innerHTML = `<strong>${item.name}</strong> $${item.price.toFixed(2)}`;
-
-            this.#cartEl.appendChild(productEl);
-        });    
+        this.#cart = cart;
     }
+
+    clearItems(): void {
+
+        this.#cartEl.replaceChildren();
+    }
+
+    notify(): void {
+    this.#cartEl.replaceChildren();
+    this.#cart.items.forEach((item) => {
+        let productEl = document.createElement("li");
+        productEl.innerHTML = `<strong>${item.name}</strong> — ${Number(item.quantityValue)} ${item.quantity} — $${(Number(item.price) * Number(item.quantityValue)).toFixed(2)}`;
+        this.#cartEl.appendChild(productEl);
+    });
+    }   
 }
