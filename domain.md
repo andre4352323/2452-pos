@@ -10,41 +10,42 @@ date: Winter 2026
 
     classDiagram
 
+        MATCHED WITH SQL AND CODE
 
         class Cashier{
 
             -~string userName
             -string password
-            -?Array~Receipt~ receipt 
-
+            
             +userName() string
             +password() string
         }
 
         note for Cashier "Invariant properties:
-        * username.length >=  10
-        * password.lenght >= 10
-        * no need to check for null in receipt due to typescript preventing it"
+        * username.length >=  1
+        * password.lenght >= 1"
 
-        Cashier "*" --o Receipt
+        Cashier "*" --o "1" Receipt
         
         class Product{
 
-            -~serial id
+            -?number id
             -ProductType name
             -number price
             -number quantityValue
             -ProductQuantity quantity
             -Cart cart
+            -Receipt receipt
         
             +price() number
             +name() ProductType  
             +quantity() ProductQuantity 
         }
 
-        Product "1" --* ProductType
-        Product "1" --* ProductQuantity
-        Product "1" --o Cart
+        Product "1" o--* "+" ProductType
+        Product "1" o--* "+" ProductQuantity
+        Product "1" *--o "*" Cart
+        Product "1" --o "1" Receipt
         
         note for Product "Invariant properties:
         * price > 0.0
@@ -58,8 +59,6 @@ date: Winter 2026
             UNITS,
             GR
         }
-
-        ProductQuantity "+" --o Product
         
         class ProductType {
             <<enumeration>>
@@ -69,71 +68,65 @@ date: Winter 2026
             SUGAR
         }
 
-         ProductType "+" --o Product
+        MATCHED WITH CODE AND SQL
 
         class Receipt {
-            -~serial id
-            -~Cart cart
-            -Temporal time
-            -Cashier cashier
 
+            -Array~Product~ products
+            -Temporal time
+            -string cashierUsername
+            -Coupon coupon
+            -~number cartId
+        
             +totalCost() number
-            +getTime() Temporal
+            +time() Temporal
+            +products () Array~Product~
             
         }
 
-        Receipt "1" --o Cashier
-        Receipt "1" --o Cart
-
-        note for Receipt"Invariant properties:
-        * no need to check cart if its null due to typescript preventing it"
+        Receipt --o Coupon
 
         class Cart {
-            
-            -?Array~Product~ items
+
+            -number id
+            -Array~Product~ items
             -Array~Listeners~ listener
-            -Coupon coupon
-            -~Receipt receipt
+            -string cashierUsername
+            -?Receipt receipt
+            -?Coupon coupon
             
-            +applyCoupon(Coupon c) void
             +addToCart(Product p) void
-            +checkout() Receipt
+            +checkout(Coupon c) Receipt
             +items() Array~Product~
-            +clearCart() void
             +registerListeners(Listener l) void
+            +id() number
         }
 
     
         note for Cart "Invariant properties:
         *loop items, Product.price > 0.0 in items."
 
-        Cart "*" --o Product
-        Cart "1" --o Coupon
-        Cart "1" --* Receipt
-
-        class Listeners{
-            <<Interface>>
-
-            +notify() void
-        }
-
+        Cart --* Receipt 
+        Cart --* Coupon
+        
         class Coupon{
             <<interface>>
             
             +apply(Cart c) number
         }
 
-        Coupon "1" --o Cart
+        class BogoCoupon{
 
-        class BOGO{
-
-            -string name
+            + string name {readonly}
             -?Product product
-            -string description
+            +string description {readonly}
 
-            +apply(Cart c) number
+            +apply(number n) number
+            +selectedProduct() Product
             
         }
+
+        BogoCoupon --o Product
 
         note for BOGO "Invariant properties:
         * name.length >= 5
@@ -145,10 +138,10 @@ date: Winter 2026
 
         class TotalDiscount{
 
-            -string name  
-            -string description
+            -string name  {readonly}
+            -string description {readonly}
 
-            +apply(Cart c) number
+            +apply(number n) number
 
         }
 
@@ -163,22 +156,25 @@ date: Winter 2026
 :::
 
 # Domain Model Changes
-
-## New Classes
-- **Cashier** — new actor with username/password and lazy receipt collection
-- **ProductType** *(enum)* — replaces `string name` on Product; values: `POPCORN`, `SODA`, `SUGAR`
-- **ProductQuantity** *(enum)* — new unit type on Product; values: `UNITS`, `GR`
-- **Coupon** *(interface)* — discount strategy with `apply(Cart): number`
-- **BOGO** *(implements Coupon)* — buy-one-get-one discount
-- **TotalDiscount** *(implements Coupon)* — flat cart discount
-
-## Modified Classes
-
-**Product** — added `~serial id`, `quantityValue`, `ProductQuantity quantity`, `Cart cart`; `name` retyped from `string` to `ProductType`
-
-**Receipt** — added `~serial id`, `Temporal time`, `Cashier cashier`, and `getTime()` method
-
-**Cart** — added `Coupon coupon`, `~Receipt receipt`, `applyCoupon()` method; `items` made optional
-
-## Removed Invariants
-- `Product.name.length >= 1` — no longer needed, name is now enforced by `ProductType` enum
+ 
+## Cashier
+- Invariants relaxed from `>= 10` to `>= 1` for username and password
+- Removed `Array<Receipt>` — cashier does not hold receipts, Receipt references cashier by username
+ 
+## Product
+- Added `Receipt` reference for DDL bidirectional navigation
+- `quantityValue` is no longer optional
+ 
+## Receipt
+- Replaced `Cart` object with `cartId: number` and `Cashier` object with `cashierUsername: string` — references by value not by object
+- Added `Coupon` field since receipt needs it to calculate total
+ 
+## Cart
+- `receipt` and `coupon` are now optional (`?`) — only set after checkout
+- Removed `clearCart()` and `applyCoupon()` — not in the implementation
+- `checkout()` now takes a `Coupon` parameter
+ 
+## Coupon / BogoCoupon / TotalDiscountCoupon
+- `apply()` now takes a `number` (subtotal) instead of the whole `Cart`
+- Classes renamed from `BOGO` and `TotalDiscount` to match actual class names in code
+ 

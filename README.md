@@ -24,7 +24,7 @@ And then open your web browser and go to the address printed out.
 # Changes in my domain model and flow diagrams
 
 * Made a new class cashier with username and password with an array of receipts
-* Added Date variable to Receipt
+* Added temporal variable to Receipt
 * Added enumeration class for product names and use it in my product class as name instead of string
 * Made a new flow to choose from two coupons when trying to checkout instead of just paying right away
 * the new point of start is the log in screen flow and added a sign up flow to create a cashier account and then log in

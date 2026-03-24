@@ -8,25 +8,19 @@ export default class ProductController {
     #productView?: ProductView;
     #cartController: CartController;
 
-
     constructor(product: Product, cartController: CartController) {
-
         this.#product = product;
         this.#cartController = cartController;
     }
 
-    showDetails() {
-
-        if(!this.#productView) {
-
+    showDetails(): void {
+        if (!this.#productView) {
             this.#productView = new ProductView(this.#product, this.#cartController, this);
-
-        }    
+        }
         this.#productView.open();
     }
 
-    hideDetails() {
-
+    hideDetails(): void {
         this.#productView?.close();
     }
 }
