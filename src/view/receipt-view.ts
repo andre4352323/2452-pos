@@ -1,20 +1,27 @@
-import type Cart from "../model/cart";
-import type CartController from "../controller/cart-controller";
-import BogoCoupon from "../model/bogo-coupon.ts";
-import TotalDiscountCoupon from "../model/total-discount-coupon.ts";
-import type Coupon from "../model/coupon.ts";
-import type Product from "../model/product.ts";
+import type Cart from "../model/cart.ts";
+import type Receipt from "../model/receipt.ts";
+import type ReceiptController from "../controller/receipt-controller.ts";
 
+/**
+ * Displays the checkout dialog, including coupon selection and the final receipt.
+ * All business logic is delegated to {@link ReceiptController} and the model
+ */
 export default class ReceiptView {
 
     #cart: Cart;
-    #cartController: CartController;
+    #receiptController: ReceiptController;
     #dialog: HTMLDialogElement;
-    #coupon?: Coupon;
 
-    constructor(cart: Cart, cartController: CartController) {
+    /**
+     * Creates the receipt view dialog and shows the coupon selection screen
+     *
+     * @param cart the cart being checked out
+     * @param receiptController the controller that handles coupon creation and checkout
+     */
+    constructor(cart: Cart, receiptController: ReceiptController) {
+
         this.#cart = cart;
-        this.#cartController = cartController;
+        this.#receiptController = receiptController;
 
         this.#dialog = document.createElement("dialog");
         this.#dialog.id = "receipt";
@@ -24,24 +31,13 @@ export default class ReceiptView {
         this.#dialog.showModal();
     }
 
-    // Groups UNITS items by name and sums their quantities across separate entries.
-    #getGroupedEligible(): Map<string, { product: Product, totalQty: number }> {
-        const grouped = new Map<string, { product: Product, totalQty: number }>();
-        this.#cart.items
-            .filter(p => p.quantity === "UNITS")
-            .forEach(p => {
-                const existing = grouped.get(p.name);
-                if (existing) {
-                    existing.totalQty += Number(p.quantityValue);
-                } else {
-                    grouped.set(p.name, { product: p, totalQty: Number(p.quantityValue) });
-                }
-            });
-        return grouped;
-    }
-
+    /**
+     * Renders the coupon selection buttons. Disables the BOGO button if no
+     * UNITS product has a total quantity of at least 2
+     */
     #showCouponSelection(): void {
-        const grouped = this.#getGroupedEligible();
+
+        const grouped = this.#cart.getBogoEligible();
         const bogoEligible = [...grouped.values()].some(e => e.totalQty >= 2);
 
         this.#dialog.innerHTML = `
@@ -54,21 +50,22 @@ export default class ReceiptView {
         `;
 
         this.#dialog.querySelector("#discount-btn")!
-            .addEventListener("click", () => {
-                TotalDiscountCoupon.fromInventory().then((coupon) => {
-                    this.#coupon = coupon;
-                    this.#showFinalReceipt(this.#coupon);
-                });
-            });
+            .addEventListener("click", () => this.#receiptController.selectTotalDiscount());
 
         if (bogoEligible) {
+
             this.#dialog.querySelector("#bogo-btn")!
                 .addEventListener("click", () => this.#showBogoPicker());
         }
     }
 
+    /**
+     * Renders the BOGO product picker, listing all eligible UNITS products
+     * the cashier can choose to get one free
+     */
     #showBogoPicker(): void {
-        const grouped = this.#getGroupedEligible();
+
+        const grouped = this.#cart.getBogoEligible();
         const eligible = [...grouped.values()].filter(e => e.totalQty >= 2);
 
         const listItems = eligible.map((e, i) =>
@@ -92,34 +89,29 @@ export default class ReceiptView {
         this.#dialog.querySelectorAll(".bogo-pick-btn").forEach((btn) => {
             btn.addEventListener("click", (e) => {
                 const idx = parseInt((e.currentTarget as HTMLElement).dataset.index!);
-                BogoCoupon.fromInventory(eligible[idx].product).then((coupon) => {
-                    this.#coupon = coupon;
-                    this.#showFinalReceipt(this.#coupon);
-                });
+                this.#receiptController.selectBogo(eligible[idx].product);
             });
         });
     }
 
-    #showFinalReceipt(coupon: Coupon): void {
-        
-        const subtotal = this.#cart.items.reduce((sum, p) =>
-            sum + (Number(p.price) * Number(p.quantityValue)), 0);
+    /**
+     * Renders the final receipt using pre-computed values from {@link Receipt}.
+     * Shows a confirm button to complete the transaction
+     *
+     * @param receipt the receipt containing subtotal, discount, and total
+     */
+    showFinalReceipt(receipt: Receipt): void {
 
-        const total = coupon.apply(subtotal);
-        const discount = subtotal - total;
-
-        const itemRows = this.#cart.items.map((item) =>
+        const itemRows = receipt.products.map((item) =>
             `<li><strong>${item.name}</strong> — ${Number(item.quantityValue)} ${item.quantity} — $${(Number(item.price) * Number(item.quantityValue)).toFixed(2)}</li>`
         ).join("");
-
-        const couponLine = `<p>Coupon: ${coupon.name} — -$${discount.toFixed(2)}</p>`;
 
         this.#dialog.innerHTML = `
             <h3>Receipt</h3>
             <ul>${itemRows}</ul>
-            <p>Subtotal: $${subtotal.toFixed(2)}</p>
-            ${couponLine}
-            <p><strong>Total: $${total.toFixed(2)}</strong></p>
+            <p>Subtotal: $${receipt.subtotal().toFixed(2)}</p>
+            <p>Coupon: ${receipt.coupon.name} — -$${receipt.discount().toFixed(2)}</p>
+            <p><strong>Total: $${receipt.totalCost().toFixed(2)}</strong></p>
             <button id="confirm-btn">Paid and done</button>
         `;
 
@@ -127,7 +119,7 @@ export default class ReceiptView {
             .addEventListener("click", () => {
                 this.#dialog.close();
                 document.body.removeChild(this.#dialog);
-                this.#cartController.confirmCheckout(coupon);
+                this.#receiptController.confirmCheckout(receipt);
             });
     }
 }

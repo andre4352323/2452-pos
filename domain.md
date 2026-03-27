@@ -10,15 +10,13 @@ date: Winter 2026
 
     classDiagram
 
-        MATCHED WITH SQL AND CODE
-
+    
         class Cashier{
 
             -~string userName
             -string password
             
             +userName() string
-            +password() string
         }
 
         note for Cashier "Invariant properties:
@@ -32,7 +30,7 @@ date: Winter 2026
             -?number id
             -ProductType name
             -number price
-            -number quantityValue
+            -number quantityValue?
             -ProductQuantity quantity
             -Cart cart
             -Receipt receipt
@@ -40,6 +38,8 @@ date: Winter 2026
             +price() number
             +name() ProductType  
             +quantity() ProductQuantity 
+            +quantityValute() number
+            +id() number
         }
 
         Product "1" o--* "+" ProductType
@@ -68,8 +68,7 @@ date: Winter 2026
             SUGAR
         }
 
-        MATCHED WITH CODE AND SQL
-
+    
         class Receipt {
 
             -Array~Product~ products
@@ -100,6 +99,8 @@ date: Winter 2026
             +items() Array~Product~
             +registerListeners(Listener l) void
             +id() number
+            +receipt() Receipt | undefined
+            +coupon() Coupon | undefined
         }
 
     

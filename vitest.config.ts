@@ -5,6 +5,10 @@ export default defineConfig({
         coverage:{
 
             provider: 'v8'
-        },      
+        },     
+        env:{
+
+            VITE_DATABASE_URL: 'memory://'
+        } 
     },    
 })

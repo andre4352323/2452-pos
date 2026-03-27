@@ -1,7 +1,12 @@
 import type Product from "../model/product";
 import type CartController from "../controller/cart-controller";
 import type ProductController from "../controller/product-controller";
+import { InvalidProductQuantityException } from "../model/product";
 
+/**
+ * Displays the product details dialog and delegates all business logic
+ * to {@link CartController} and {@link ProductController}
+ */
 export default class ProductView {
 
     #productviewElement: HTMLDialogElement;
@@ -9,15 +14,23 @@ export default class ProductView {
     #product: Product;
     #productController: ProductController;
 
+    /**
+     * Creates the product details view, including quantity input and action buttons
+     * The dialog is prepared but not shown until {@link open} is called
+     *
+     * @param product the product whose details are being viewed
+     * @param cartController the controller responsible for adding items to the cart
+     * @param productController the controller managing product detail visibility
+     */
     constructor(product: Product, cartController: CartController, productController: ProductController) {
+
         this.#product = product;
         this.#cartController = cartController;
         this.#productController = productController;
 
+        // determine correct unit label and numeric input constraints
         const isGrams = this.#product.quantity === "GR";
         const unit = isGrams ? "gr" : "units";
-        // Grams allow decimals, units only allow whole numbers.
-        const inputType = isGrams ? "number" : "number";
         const stepAttr = isGrams ? 'step="0.1" min="0.1"' : 'step="1" min="1"';
 
         this.#productviewElement = document.createElement("dialog");
@@ -27,10 +40,8 @@ export default class ProductView {
             <p>${this.#product.name}</p>
             <p>Price: $${this.#product.price} per ${unit}</p>
             <label for="quantity-input">Quantity (${unit})</label>
-            <input type="${inputType}" id="quantity-input" ${stepAttr} value="1" />
-            <span id="quantity-error" style="color: red; display: none;">
-                Please enter a valid quantity greater than 0.
-            </span>
+            <input type="number" id="quantity-input" ${stepAttr} value="1" />
+            <span id="quantity-error" style="color: red;"></span>
             <br/>
             <button id="close-btn">Close</button>
             <button id="add-to-cart">Add to Cart</button>
@@ -45,33 +56,50 @@ export default class ProductView {
             .addEventListener("click", () => this.#productController.hideDetails());
     }
 
+    /**
+     * Attempts to add the product to the cart using the entered quantity.
+     * Displays validation errors if the quantity is invalid.
+     */
     #addToCart(): void {
-        const input = this.#productviewElement.querySelector<HTMLInputElement>("#quantity-input")!;
-        const errorSpan = this.#productviewElement.querySelector<HTMLSpanElement>("#quantity-error")!;
+
+        const input =
+            this.#productviewElement.querySelector<HTMLInputElement>("#quantity-input")!;
+
+        const errorSpan =
+            this.#productviewElement.querySelector<HTMLSpanElement>("#quantity-error")!;
+
         const quantityValue = parseFloat(input.value);
 
-        // Validate: must be a positive number, and for UNITS must be a whole number.
-        const isGrams = this.#product.quantity === "GR";
-        const isValid = !isNaN(quantityValue) && quantityValue > 0 &&
-            (isGrams || Number.isInteger(quantityValue));
+        // reset previous error highlighting
+        input.setAttribute("style", "");
+        errorSpan.textContent = "";
 
-        if (!isValid) {
-            errorSpan.style.display = "inline";
-            input.style.borderColor = "red";
-            return;
-        }
+        this.#cartController.addToCart(this.#product, quantityValue)
+            .then(() => {
+            
+            })
+            .catch((e: any) => {
 
-        errorSpan.style.display = "none";
-        input.style.borderColor = "";
+                if (e instanceof InvalidProductQuantityException) {
 
-        this.#cartController.addToCart(this.#product, quantityValue);
+                    input.setAttribute("style", "border-color: red;");
+                    errorSpan.textContent =
+                        "Invalid quantity, quantity must be at least 1.";
+
+                } else {
+
+                    console.error("Unexpected error adding to cart:", e);
+                }
+            });
     }
 
-    open(): void {
-        this.#productviewElement.showModal();
-    }
+    /**
+     * Opens the product details dialog
+     */
+    open(): void { this.#productviewElement.showModal(); }
 
-    close(): void {
-        this.#productviewElement.close();
-    }
+    /**
+     * Closes the product details dialog
+     */
+    close(): void { this.#productviewElement.close(); }
 }

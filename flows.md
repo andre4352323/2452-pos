@@ -78,6 +78,7 @@ flowchart
         valid -. yes .- select[Choose item to apply coupon]
         valid -. please select other coupon .- start
         select == item chosen ==> update{update total cost of the cart} 
+        select == press go back button ==> start
         update -. show receipt with total cost  .-> pay[Pay cart]
         start == press 10% discount coupon ==> update
 
