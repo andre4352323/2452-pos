@@ -10,11 +10,16 @@ POS System is an implementation of the software used to do things like keep trac
 # Running
 
 This project is a Node.js project using VSCode. You can run it on the command
-line using 
+line using
 `npm install` and then
 `npx vite`:
+the last command have to be typed after running my training program below 
+and then open your web browser and go to the address printed out.
 
-And then open your web browser and go to the address printed out.
+
+# Training of the data
+ so to run my training program run this command line in the root of the program,
+ `npx ts-node train.ts` and it will output a model.csv file in the root of the program that contains and adjacency matrix with raw probabilities between [0,1]
 
 # Domain model and flow diagrams
 

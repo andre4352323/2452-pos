@@ -36,9 +36,11 @@ export default class CartController {
 
             this.#cartView.notify();
             this.#cartView.show();
+            this.#cartView.showAutoShop();
 
         } else {
             this.#cartView.hide();
+            this.#cartView.hideAutoShop();
         }
     }
 
@@ -92,5 +94,19 @@ export default class CartController {
         this.#cart = nextCart;
         nextCart.registerListener(this.#cartView!);
         this.#cartView!.updateCart(nextCart);
+    }
+
+    async autoShop(budget: number): Promise<void> {
+
+        const lastProductName = this.#cart.items[this.#cart.items.length - 1].name;
+        const allProducts = await Product.getAllProducts();
+        const items = await Product.autoShop(budget, lastProductName, allProducts);
+
+        for (const item of items) {
+
+            await this.#cart.addToCart(item);
+        }
+
+        this.#cartView!.show();
     }
 }

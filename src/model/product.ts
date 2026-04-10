@@ -2,6 +2,35 @@ import { assert } from "../assertions.ts";
 import db from "./connection.ts";
 import type { ProductType } from "./product-type.ts";
 import type { ProductQuantity } from "./product-quantity.ts";
+import { matrix } from "../main.ts";
+import rng from "../main.ts";
+
+const STATES = ["a","b","c","d","e","f","g","h","i","j"];
+const STATE_TO_PRODUCT: Record<string, ProductType> = {
+    "a": "POPCORN",
+    "b": "SODA",
+    "c": "SUGAR",
+    "d": "GUMMY BEARS",
+    "e": "ICE CREAM",
+    "f": "HOT DOG",
+    "g": "CHIPS",
+    "h": "GUMMY WORMS",
+    "i": "NACHOS",
+    "j": "GUMMY PENGUINS"
+};
+
+const PRODUCT_TO_STATE: Record<string, string> = {
+    "POPCORN": "a",
+    "SODA": "b",
+    "SUGAR": "c",
+    "GUMMY BEARS": "d",
+    "ICE CREAM": "e",
+    "HOT DOG": "f",
+    "CHIPS": "g",
+    "GUMMY WORMS": "h",
+    "NACHOS": "i",
+    "GUMMY PENGUINS": "j"
+};
 
 /**
  * represents a product that can be retrieved from the inventory
@@ -144,6 +173,40 @@ export default class Product {
 
         assert(this.#name.length > 0, "Product name should be at least 1 character long");
         assert(this.#price > 0.0, "Product price should be greater than 0.0");
+    }
+
+    static nextProduct(lastProductName: string): ProductType {
+
+        const stateIndex = STATES.indexOf(PRODUCT_TO_STATE[lastProductName]);
+        const row = matrix[stateIndex];
+        const random = Math.random();
+        console.log(`Random number: ${random}`);
+        let sum = 0;
+        let chosen = STATES.length - 1;
+
+        for (let j = 0; j < row.length; j++) {
+
+            sum += row[j];
+            
+            if (sum >= random) {
+
+                chosen = j;
+                return STATE_TO_PRODUCT[STATES[chosen]];
+            }
+        }
+        return STATE_TO_PRODUCT[STATES[chosen]];
+    }
+
+    static async autoShop(budget: number, lastProductName: string, allProducts: Product[]): Promise<Array<Product>> {
+
+        const nextName = Product.nextProduct(lastProductName);
+        const product = allProducts.find(p => p.name === nextName)!;
+        const canAfford = product.price <= budget;
+        if (!canAfford) return [];
+
+        const entry = Product.withQuantity(product.name as ProductType, product.price, product.quantity as ProductQuantity, 1);
+        const rest = await Product.autoShop(budget - product.price, nextName, allProducts);
+        return [entry, ...rest];
     }
 
     get price(): number { return this.#price; }

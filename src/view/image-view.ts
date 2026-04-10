@@ -23,17 +23,23 @@ export default class ImageView {
 
         this.#productController = productController;
         this.#product = product;
-        document.querySelector("#app")!.innerHTML += 
+
+        document.querySelector<HTMLElement>("#app")!.style = "display: flex; flex-wrap: wrap;";
+        document.querySelector("#app")!.insertAdjacentHTML("beforeend",
             `<div id="product">
-                <img src="/src/img/${this.#product.name}.jpg"
-                    alt="${this.#product.name}"
-                    style="width: 200px; height: 200px; object-fit: cover; cursor: pointer;"/>
-             </div>`;
+                <figure style="margin: 0; text-align: center;">
+                    <img src="/src/img/${this.#product.name}.jpg"
+                        alt="${this.#product.name}"
+                        style="width: 200px; height: 200px; object-fit: cover; cursor: pointer;"/>
+                    <figcaption> Click image to add to cart </figcaption>
+                </figure>
+            </div>`);
+       
 
         this.#productEl =
             document.querySelector(`img[alt='${this.#product.name}']`)!;
 
-        document.body.appendChild(this.#productEl);
+        //document.body.appendChild(this.#productEl);
 
         this.#productEl.addEventListener(
             "click",

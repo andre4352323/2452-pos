@@ -11,6 +11,8 @@ export default class CartView {
     #cartEl: HTMLUListElement;
     #cartContainerEl: HTMLDivElement;
     #cartController: CartController;
+    #autoShopBtn: HTMLButtonElement;
+    #budgetInput: HTMLInputElement;
 
     /**
      * Creates and renders the cart container, registers itself as a cart listener,
@@ -34,17 +36,29 @@ export default class CartView {
             <h2>Shopping Cart</h2>
             <ul></ul>
             <button id="checkout-btn">Checkout</button>
+            <input id="budget-input" type="number" placeholder="Enter budget" min="0" step="0.01"/>
+            <button id="autoshop-btn">Auto Shop</button>
         `;
 
         // reference to the cart item list
         this.#cartEl = this.#cartContainerEl.querySelector("ul")!;
+        this.#autoShopBtn = this.#cartContainerEl.querySelector("#autoshop-btn")!;
+        this.#budgetInput = this.#cartContainerEl.querySelector("#budget-input")!;
 
         // wire up checkout button to controller
         this.#cartContainerEl.querySelector("#checkout-btn")!
             .addEventListener("click", () => this.#cartController.checkout());
 
+        this.#cartContainerEl.querySelector("#autoshop-btn")!
+            .addEventListener("click", () => {
+
+                const input = this.#cartContainerEl.querySelector<HTMLInputElement>("#budget-input")!;
+                const budget = parseFloat(input.value);
+                if (budget > 0) this.#cartController.autoShop(budget);
+            });
+
         // attach cart UI to page
-        document.body.appendChild(this.#cartContainerEl);
+        document.body.prepend(this.#cartContainerEl);
     }
 
     /**
@@ -56,6 +70,18 @@ export default class CartView {
      * Shows the cart container
      */
     show(): void { this.#cartContainerEl.style.display = "block"; }
+
+    showAutoShop(): void {
+
+        this.#cartContainerEl.style.display = "inline-block";
+        this.#cartContainerEl.style.display = "inline-block";
+    }
+
+    hideAutoShop(): void {
+
+        this.#cartContainerEl.style.display = "none";
+        this.#cartContainerEl.style.display = "none";
+    }
 
     /**
      * Updates the internal cart reference

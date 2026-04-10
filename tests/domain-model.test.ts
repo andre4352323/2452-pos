@@ -6,6 +6,7 @@ import Cashier from '../src/model/cashier';
 import BogoCoupon from '../src/model/bogo-coupon';
 import TotalDiscountCoupon from '../src/model/total-discount-coupon';
 import type Listener from '../src/model/listeners';
+import seedrandom from 'seedrandom';
 
 // required so that the test runs more than once using mock
 
@@ -14,6 +15,20 @@ const mockQuery = vi.fn();
 vi.mock('../src/model/connection', () => ({
     default: () => ({ query: mockQuery }),
 }));
+
+vi.mock('../src/main', () => {
+    
+    const seedrandom = require('seedrandom');
+    const rng = seedrandom('walter');
+    const STATES = ["a","b","c","d","e","f","g","h","i","j"];
+    const N = 10;
+   
+    // so we can predict the outcome deterministically
+    const matrix: number[][] = Array.from({ length: N }, (_, i) =>
+        Array.from({ length: N }, (_, j) => (j === i ? 1.0 : 0.0))
+    );
+    return { default: rng, matrix };
+});
 
 function rows<T>(data: T[]) {
     return { rows: data };
@@ -250,5 +265,21 @@ describe('Cart', () => {
             .mockResolvedValueOnce(rows([{ id: 5 }]));
         const cart = await Cart.loadOrCreateForCashier('cashier_one');
         expect(cart.id).toBe(5);
+    });
+});
+
+describe('Markov chain', () => {
+
+    test('nextProduct always returns same state when matrix has probability 1 on diagonal', () => {
+
+        // with identity matrix, POPCORN always goes to POPCORN 
+        const result = Product.nextProduct('POPCORN');
+        expect(result).toBe('POPCORN');
+    });
+
+    test('nextProduct always returns same state for SODA with identity matrix', () => {
+
+        const result = Product.nextProduct('SODA');
+        expect(result).toBe('SODA');
     });
 });

@@ -65,17 +65,14 @@ create table if not exists product_inventory (
 insert into product_inventory (product_type, product_unit, product_price) values
 ('POPCORN', 'UNITS', 5.00),
 ('SODA',    'UNITS', 3.50),
-('SUGAR',   'GR',    0.05)
+('SUGAR',   'GR',    0.05),
 ('GUMMY BEARS', 'GR', 0.025),
 ('ICE CREAM',    'UNITS', 3.50),
 ('HOT DOG',   'UNITS',    4.00),
 ('CHIPS', 'UNITS', 5.20),
 ('GUMMY WORMS',    'GR', 0.035),
-('NACHOS',   'UNITS',    6.50)
-('CHOCOLATE', 'UNITS', 2.50),
-('GUMMY SHARKS', 'GR', 0.065),
-('OREO MILKSHAKE',    'UNITS', 7.80),
-('GUMMY PENGUINS',   'GR',    0.075),
+('NACHOS',   'UNITS',    6.50),
+('GUMMY PENGUINS',   'GR',    0.075)
 on conflict do nothing;
 
 -- Coupon Inventory
